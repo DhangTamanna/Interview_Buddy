@@ -1,19 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { setToken } from "../utils/auth"; // ✅ FIXED HERE
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    const userData = {
-      email,
-      password,
-    };
+    setLoading(true);
 
     try {
       const response = await fetch("http://localhost:5000/login", {
@@ -21,26 +19,33 @@ function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
-      console.log(data);
+      console.log("LOGIN RESPONSE:", data);
 
-      // Check if token exists
+      if (!response.ok) {
+        alert(data.message || "Login failed");
+        return;
+      }
+
       if (data.token) {
-        // Save token
-        localStorage.setItem("token", data.token);
+        setToken(data.token); // ✅ FIXED
 
-        // Go to dashboard
+        localStorage.setItem("user", JSON.stringify(data.user));
+
         navigate("/dashboard");
       } else {
-        alert("Invalid email or password");
+        alert("Invalid credentials");
       }
 
     } catch (error) {
       console.log("Login Error:", error);
+      alert("Server error. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,7 +68,9 @@ function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button type="submit">Login</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
       </form>
     </div>
   );

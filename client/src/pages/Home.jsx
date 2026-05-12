@@ -4,6 +4,7 @@ function Home() {
       <h1>Welcome to InterviewBuddy</h1>
       <p>Practice mock interviews with peers</p>
     </div>
+    
   );
 }
 

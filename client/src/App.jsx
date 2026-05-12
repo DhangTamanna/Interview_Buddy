@@ -5,6 +5,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Interview from "./pages/Interview";
+import Profile from "./pages/Profile";
+import History from "./pages/History";
 
 import Navbar from "./components/Navbar";
 
@@ -20,22 +22,10 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/signup" element={<Signup />} />
-        <Route
-        path="/dashboard"
-        element={
-       <PrivateRoute>
-      <Dashboard />
-    </PrivateRoute>
-  }
-/>
-<Route
-  path="/interview"
-  element={
-    <PrivateRoute>
-      <Interview/>
-    </PrivateRoute>
-  }
-/>
+        <Route path="/dashboard"element={ <PrivateRoute><Dashboard /></PrivateRoute>}/>
+        <Route path="/interview"element={<PrivateRoute><Interview/></PrivateRoute> }/>
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/history" element={<History />} />
     </Routes>
 
     </BrowserRouter>

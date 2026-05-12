@@ -1,138 +1,137 @@
 require("dotenv").config();
-const jwt = require("jsonwebtoken");
 const express = require("express");
-const router = express.Router();
-const cors = require("cors");
 const mongoose = require("mongoose");
-const User = require("./models/User");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const authMiddleware = require("./middleware/authMiddleware");
+
+const User = require("./models/User");
 const InterviewResult = require("./models/InterviewResult");
+const authMiddleware = require("./middleware/authMiddleware");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
+
 app.use(express.json());
 
-mongoose.connect (process.env.MONGO_URL).then(()=>console.log("MongoDB Connected")).catch((error)=>console.log(error));
+// DB CONNECT
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.log(err));
 
+// HOME
 app.get("/", (req, res) => {
   res.send("InterviewBuddy Backend Running");
 });
-router.post("/signup", async (req, res) => {
 
-  const { name, email, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
 
-  if (!name || !email || !password) {
-    return res.status(400).json({
-      message: "All fields are required",
-    });
-  }
+// ======================= AUTH =======================
 
-  if (password.length < 6) {
-    return res.status(400).json({
-      message: "Password must be at least 6 characters",
-    });
-  }
-
-  const newUser = new User({
-    name,
-    email,
-    password : hashedPassword,
-  });
-   await newUser.save();
-
-  res.json({
-    message: "Signup successful",
-  });
-
-});
-router.post("/login", async (req, res) => {
+// SIGNUP
+app.post("/signup", async (req, res) => {
   try {
+    const { name, email, password } = req.body;
 
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    await user.save();
+
+    res.json({ message: "Signup successful" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+// LOGIN (stores token in response)
+app.post("/login", async (req, res) => {
+  try {
     const { email, password } = req.body;
 
-    // 1. Check user exists
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({
-        message: "User not found"
-      });
+      return res.status(400).json({ message: "User not found" });
     }
 
-    // 2. Compare password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(400).json({
-        message: "Invalid credentials"
-      });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // 3. Generate JWT token
-          const token = jwt.sign(
-        { id: user._id },
-        "mysecretkey",
-        { expiresIn: "7d" }
-      );
-     console.log(token);
-    // 4. Send response
-    res.status(200).json({
-      message: "Login successful",
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
       token,
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
-      }
+        email: user.email,
+      },
     });
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message
-    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
-router.get("/profile", authMiddleware, (req, res) => {
-  res.json({
-    message: "Protected route accessed",
-    userId: req.user.id
-  });
-});
-router.post("/save-result", authMiddleware, async (req, res) => {
 
+// ======================= SAVE RESULT =======================
+app.post("/save-result", authMiddleware, async (req, res) => {
   try {
-
-    console.log(req.body);
-
     const { category, score, answers } = req.body;
 
-    const newResult = new InterviewResult({
+    const result = new InterviewResult({
       userId: req.user.id,
       category,
       score,
       answers,
     });
 
-    await newResult.save();
+    await result.save();
 
-    res.status(201).json({
-      message: "Interview result saved",
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(201).json({ message: "Saved successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
-app.use("/",router);
-// server start
-const PORT = 5000;
+
+
+// ======================= HISTORY (IMPORTANT FIX) =======================
+app.get("/results", authMiddleware, async (req, res) => {
+  try {
+    const results = await InterviewResult.find({
+      userId: req.user.id,
+    }).sort({ createdAt: -1 });
+
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+// SERVER START
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

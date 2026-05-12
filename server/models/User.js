@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
+
   name: {
     type: String,
     required: true,
@@ -16,6 +17,22 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+
+  bio: {
+    type: String,
+    default: "",
+  },
+
+  skills: {
+    type: [String],
+    default: [],
+  },
+
+  preferredInterviewType: {
+    type: String,
+    default: "",
+  },
+
 });
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", UserSchema);
