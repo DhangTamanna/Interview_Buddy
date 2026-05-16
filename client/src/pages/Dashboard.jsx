@@ -91,7 +91,7 @@ function Dashboard() {
 
         const response =
           await fetch(
-            "http://localhost:5000/api/ai/resume-interview",
+            "https://interview-buddy-backend-7udp.onrender.com/api/ai/resume-interview",
             {
               method: "POST",
               body: formData,

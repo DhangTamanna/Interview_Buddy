@@ -55,7 +55,7 @@ function Interview() {
         localStorage.getItem("token");
 
       await fetch(
-        "http://localhost:5000/save-result",
+        "https://interview-buddy-backend-7udp.onrender.com/save-result",
         {
           method: "POST",
 
@@ -144,7 +144,7 @@ function Interview() {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/ai/evaluate-answer",
+        "https://interview-buddy-backend-7udp.onrender.com/api/ai/evaluate-answer",
         {
           method: "POST",
 

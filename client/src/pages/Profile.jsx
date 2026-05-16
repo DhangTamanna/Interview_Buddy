@@ -35,7 +35,7 @@ function Profile() {
           localStorage.getItem("token");
 
         const response = await fetch(
-          "http://localhost:5000/profile",
+          "https://interview-buddy-backend-7udp.onrender.com/profile",
           {
             headers: {
               Authorization:
@@ -92,7 +92,7 @@ function Profile() {
         localStorage.getItem("token");
 
       const response = await fetch(
-        "http://localhost:5000/update-profile",
+        "https://interview-buddy-backend-7udp.onrender.com/update-profile",
         {
           method: "PUT",
 

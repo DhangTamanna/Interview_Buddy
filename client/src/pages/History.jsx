@@ -14,7 +14,7 @@ function History() {
         const token = localStorage.getItem("token");
 
         const response = await fetch(
-          "http://localhost:5000/results",
+          "https://interview-buddy-backend-7udp.onrender.com/results",
           {
             method: "GET",
             headers: {
