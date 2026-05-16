@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setToken } from "../tempUtils/auth";
+import { setToken } from "../utils/auth";
 
 function Login() {
   const [email, setEmail] = useState("");
