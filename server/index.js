@@ -25,7 +25,10 @@ const upload = multer({
 // ======================= MIDDLEWARE =======================
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+    "http://localhost:5173",
+    "https://interview-buddy-umber.vercel.app",
+  ],
   credentials: true,
 }));
 
