@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setToken } from "../utils/auth"; // ✅ FIXED HERE
+import { setToken } from "../utils/auth";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -32,9 +32,12 @@ function Login() {
       }
 
       if (data.token) {
-        setToken(data.token); // ✅ FIXED
+        setToken(data.token);
 
         localStorage.setItem("user", JSON.stringify(data.user));
+
+        // 👇 fire this so Navbar updates in the same tab
+        window.dispatchEvent(new Event("authChange"));
 
         navigate("/dashboard");
       } else {
@@ -50,28 +53,43 @@ function Login() {
   };
 
   return (
-    <div className="page">
-      <h1>Login</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white">
 
-      <form className="form" onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+      <div className="bg-gray-900 p-8 rounded-xl w-96 shadow-lg">
 
-        <input
-          type="password"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          Login
+        </h1>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+
+          <input
+            type="email"
+            placeholder="Enter email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="p-3 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-blue-500"
+          />
+
+          <input
+            type="password"
+            placeholder="Enter password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="p-3 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-blue-500"
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="p-3 bg-blue-600 hover:bg-blue-700 rounded font-semibold transition"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+
+        </form>
+
+      </div>
     </div>
   );
 }

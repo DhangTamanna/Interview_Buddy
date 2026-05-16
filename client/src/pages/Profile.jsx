@@ -2,40 +2,65 @@ import { useEffect, useState } from "react";
 
 function Profile() {
 
-  const [bio, setBio] = useState("");
-
-  const [skills, setSkills] = useState("");
-
-  const [preferredInterviewType, setPreferredInterviewType] =
+  const [name, setName] =
     useState("");
 
-  const [message, setMessage] = useState("");
+  const [email, setEmail] =
+    useState("");
 
-  // FETCH PROFILE
+  const [bio, setBio] =
+    useState("");
+
+  const [skills, setSkills] =
+    useState("");
+
+  const [
+    preferredInterviewType,
+    setPreferredInterviewType,
+  ] = useState("");
+
+  const [message, setMessage] =
+    useState("");
+
+
+  // ================= FETCH PROFILE =================
+
   useEffect(() => {
 
     const fetchProfile = async () => {
 
       try {
 
-        const token = localStorage.getItem("token");
+        const token =
+          localStorage.getItem("token");
 
         const response = await fetch(
-          "http://localhost:5000/get-profile",
+          "http://localhost:5000/profile",
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization:
+                `Bearer ${token}`,
             },
           }
         );
 
-        const data = await response.json();
+        const data =
+          await response.json();
 
-        console.log(data);
+        console.log(
+          "PROFILE DATA:",
+          data
+        );
+
+        setName(data.name || "");
+
+        setEmail(data.email || "");
 
         setBio(data.bio || "");
 
-        setSkills(data.skills?.join(", ") || "");
+        setSkills(
+          data.skills?.join(", ") || ""
+        );
 
         setPreferredInterviewType(
           data.preferredInterviewType || ""
@@ -43,7 +68,10 @@ function Profile() {
 
       } catch (error) {
 
-        console.log(error);
+        console.log(
+          "Fetch profile error:",
+          error
+        );
       }
     };
 
@@ -51,14 +79,17 @@ function Profile() {
 
   }, []);
 
-  // UPDATE PROFILE
+
+  // ================= UPDATE PROFILE =================
+
   const handleUpdate = async (e) => {
 
     e.preventDefault();
 
     try {
 
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
       const response = await fetch(
         "http://localhost:5000/update-profile",
@@ -66,75 +97,218 @@ function Profile() {
           method: "PUT",
 
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
           },
 
           body: JSON.stringify({
+            name,
             bio,
-            skills: skills.split(","),
+            skills:
+              skills
+                .split(",")
+                .map((s) => s.trim()),
+
             preferredInterviewType,
           }),
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      setMessage(data.message);
+      setMessage(
+        data.message ||
+        "Profile updated successfully"
+      );
+
+      // update navbar user instantly
+      if (data.user) {
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify(data.user)
+        );
+
+        window.dispatchEvent(
+          new Event("authChange")
+        );
+      }
 
     } catch (error) {
 
-      console.log(error);
+      console.log(
+        "Update profile error:",
+        error
+      );
+
+      setMessage(
+        "Something went wrong"
+      );
     }
   };
 
+
   return (
-    <div style={{ padding: "20px" }}>
 
-      <h1>My Profile</h1>
+    <div className="flex justify-center items-start min-h-[80vh] text-white p-6">
 
-      <p>{message}</p>
+      <div className="w-full max-w-2xl bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-6">
 
-      <form onSubmit={handleUpdate}>
+        {/* PROFILE HEADER */}
+        <div className="flex items-center gap-4">
 
-        <textarea
-          rows="5"
-          cols="40"
-          placeholder="Enter bio"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-        />
+          {/* AVATAR */}
+          <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-3xl font-bold">
 
-        <br />
-        <br />
+            {name?.charAt(0).toUpperCase()}
 
-        <input
-          type="text"
-          placeholder="Skills (React, Node, MongoDB)"
-          value={skills}
-          onChange={(e) => setSkills(e.target.value)}
-        />
+          </div>
 
-        <br />
-        <br />
+          {/* USER INFO */}
+          <div>
 
-        <input
-          type="text"
-          placeholder="Preferred Interview Type"
-          value={preferredInterviewType}
-          onChange={(e) =>
-            setPreferredInterviewType(e.target.value)
-          }
-        />
+            <h1 className="text-2xl font-bold text-white">
 
-        <br />
-        <br />
+              {name}
 
-        <button type="submit">
-          Update Profile
-        </button>
+            </h1>
 
-      </form>
+            <p className="text-gray-400">
+
+              {email}
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+        {/* MESSAGE */}
+        {message && (
+
+          <div className="bg-green-900/30 border border-green-700 text-green-400 p-3 rounded-lg">
+
+            {message}
+
+          </div>
+        )}
+
+
+        {/* FORM */}
+        <form
+          onSubmit={handleUpdate}
+          className="space-y-4"
+        >
+
+          {/* NAME */}
+          <div>
+
+            <label className="text-sm text-gray-400">
+
+              Name
+
+            </label>
+
+            <input
+              type="text"
+              className="w-full mt-1 bg-gray-800 border border-gray-700 p-3 rounded-lg focus:outline-none focus:border-blue-500"
+              value={name}
+              onChange={(e) =>
+                setName(e.target.value)
+              }
+            />
+
+          </div>
+
+
+          {/* BIO */}
+          <div>
+
+            <label className="text-sm text-gray-400">
+
+              Bio
+
+            </label>
+
+            <textarea
+              rows="5"
+              className="w-full mt-1 bg-gray-800 border border-gray-700 p-3 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Write something about yourself..."
+              value={bio}
+              onChange={(e) =>
+                setBio(e.target.value)
+              }
+            />
+
+          </div>
+
+
+          {/* SKILLS */}
+          <div>
+
+            <label className="text-sm text-gray-400">
+
+              Skills
+
+            </label>
+
+            <input
+              type="text"
+              className="w-full mt-1 bg-gray-800 border border-gray-700 p-3 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="React, Node, MongoDB"
+              value={skills}
+              onChange={(e) =>
+                setSkills(e.target.value)
+              }
+            />
+
+          </div>
+
+
+          {/* INTERVIEW TYPE */}
+          <div>
+
+            <label className="text-sm text-gray-400">
+
+              Preferred Interview Type
+
+            </label>
+
+            <input
+              type="text"
+              className="w-full mt-1 bg-gray-800 border border-gray-700 p-3 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Frontend / Backend / DSA / HR"
+              value={
+                preferredInterviewType
+              }
+              onChange={(e) =>
+                setPreferredInterviewType(
+                  e.target.value
+                )
+              }
+            />
+
+          </div>
+
+
+          {/* BUTTON */}
+          <button
+            type="submit"
+            className="w-full bg-blue-500 hover:bg-blue-600 py-2 rounded-lg font-semibold transition"
+          >
+
+            Update Profile
+
+          </button>
+
+        </form>
+
+      </div>
 
     </div>
   );
